@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>clip geoJson demo</title>
+    <link type="text/css" rel="stylesheet" href="../../css/base.css">
+    <link type="text/css" rel="stylesheet" href="../../lib/leaflet/leaflet.css">
+
+</head>
+<body>
+<div class="mainBody">
+
+    <div id="map"></div>
+
+</div>
+<script type="text/javascript" src="../../lib/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="../../lib/leaflet/leaflet-src.js"></script>
+<script type="text/javascript" src="../../lib/leaflet/leaflet.ChineseTmsProviders.js"></script>
+
+
+<script>
+    var map;
+
+    var viewCenter = [30.4, 111.5];
+    var mapLay = L.tileLayer.chinaProvider('Geoq.Normal.Warm', {});
+
+    map = L.map('map', {
+        minZoom: 5,
+        maxZoom: 16,
+        attributionControl: false,
+        zoomControl: false,
+        layers: [mapLay]
+    });
+
+    map.setView(viewCenter, 7);
+
+    $.getJSON('../../static/rainColor/rainColor.json', {}, function (data) {
+        var colorMapLayer = L.geoJSON(data, {
+            style: function (feature) {
+                if (feature.properties.color === '#f0f0f0') {
+                    return {
+                        weight: 0,
+                        fill: false
+                    }
+                }
+                else {
+                    return {
+                        weight: 0,
+                        fillColor: feature.properties.color,
+                        fillOpacity: 0.7
+                    };
+                }
+
+            }
+        });
+        colorMapLayer.addTo(map);
+    })
+
+    function clipGeoJson(data) {
+        var features = data.features;
+        for (var i = 0; i < features.length; i++) {
+            var feature = features[i];
+            var coordinates = feature.geometry.coordinates[0];
+            for (var j = 0; j < coordinates.length; j++) {
+                var coordinate = coordinates[i];
+                var lng = coordinate[0];
+                var lat = coordinate[1];
+
+            }
+        }
+    }
+
+</script>
+</body>
+</html>
