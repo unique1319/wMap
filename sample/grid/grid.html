@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>grid demo</title>
+    <link type="text/css" rel="stylesheet" href="../../css/base.css">
+    <link type="text/css" rel="stylesheet" href="../../lib/leaflet/leaflet.css">
+
+    <style>
+
+        /*图例*/
+        ul, li {
+            list-style: none;
+            border: none;
+        }
+
+        .index-map-tl {
+            position: absolute;
+            top: 64px;
+            left: 10px;
+            z-index: 9999;
+        }
+
+        .index-legend {
+            background: #ebf2fc;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            background-clip: padding-box;
+            width: 60px;
+            padding: 6px 10px 10px 10px;
+            border-radius: 4px;
+        }
+
+        .index-legend li {
+            width: 18px;
+            height: 28px;
+            border: 1px solid #000;
+            border-bottom: none;
+        }
+
+        .index-legend li span {
+            font-size: 12px;
+            display: block;
+            padding-top: 20px;
+            margin-left: 20px;
+            text-align: left;
+        }
+
+    </style>
+
+</head>
+<body>
+<div class="mainBody">
+
+    <div id="map"></div>
+
+    <div class="index-map-tl">
+        <ul class="index-legend"></ul>
+    </div>
+
+</div>
+<script type="text/javascript" src="../../lib/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="../../lib/leaflet/leaflet-src.js"></script>
+<!--<script type="text/javascript" src="../../lib/leaflet/proj4.js"></script>-->
+<!--<script type="text/javascript" src="../../lib/leaflet/proj4leaflet.js"></script>-->
+<script type="text/javascript" src="../../lib/leaflet/leaflet.ChineseTmsProviders.js"></script>
+<script type="text/javascript" src="../../lib/leaflet/L.CanvasLayer.js"></script>
+
+<script type="text/javascript" src="../../js/grid/grid.griddata.js"></script>
+<script type="text/javascript" src="../../js/grid/grid.choroplethic.js"></script>
+<script type="text/javascript" src="../../js/grid/grid.value.js"></script>
+<script type="text/javascript" src="../../js/grid/grid.legend.js"></script>
+
+<script>
+    var map;
+
+    var viewCenter = [30.4, 109.5];
+    var mapLay = L.tileLayer.chinaProvider('Geoq.Normal.Gray', {});
+
+    map = L.map('map', {
+        minZoom: 5,
+        maxZoom: 16,
+        attributionControl: false,
+        zoomControl: false,
+        layers: [mapLay]
+    });
+
+    map.setView(viewCenter, 6);
+
+    var legend = GridLegendUtil.parseColorAndValueArray(GridLegend.temp.common);
+    GridLegendUtil.initLegendHtml(legend);
+
+    $.get('../../static/grid/temperature.txt', {}, function (data) {
+        var dataArray = JSON.parse(data);
+        var choroplethicCanvas = new Choroplethic(map, new GridData(dataArray), legend.colorArray, legend.valueArray);
+        var choroplethicLayer = L.canvasLayer({opacity: 0.8}).delegate(choroplethicCanvas);
+        var gridValueCanvas = new GridValueCanvas(map, new GridData(dataArray));
+        var gridValueLayer = L.canvasLayer({opacity: 1}).delegate(gridValueCanvas);
+        map.addLayer(choroplethicLayer);
+        map.addLayer(gridValueLayer);
+    });
+
+</script>
+</body>
+</html>

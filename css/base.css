@@ -1,0 +1,25 @@
+/**
+ * @author wrh
+ * @date 2019-04-26
+ * @name base
+ * @Description: 
+*/
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    background-color: #999999;
+}
+
+.mainBody {
+    width: 100%;
+    height: calc(100vh);
+}
+
+div#map {
+    width: inherit;
+    height: inherit;
+}
