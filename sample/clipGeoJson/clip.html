@@ -34,6 +34,19 @@
 
     map.setView(viewCenter, 7);
 
+    var hbJson;
+    $.getJSON('../../static/boundary/hubei.json', function (data) {
+        hbJson = data;
+        var hbLayer = L.geoJSON(hbJson, {
+            style: {
+                color: '#000000',
+                weight: '2',
+                fill: false
+            },
+            pane: 'tooltipPane'
+        }).addTo(map);
+    });
+
     $.getJSON('../../static/rainColor/rainColor.json', {}, function (data) {
         var colorMapLayer = L.geoJSON(data, {
             style: function (feature) {
@@ -54,19 +67,21 @@
             }
         });
         colorMapLayer.addTo(map);
-    })
+    });
 
     function clipGeoJson(data) {
         var features = data.features;
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
             var coordinates = feature.geometry.coordinates[0];
+            var pointArray = [];
             for (var j = 0; j < coordinates.length; j++) {
                 var coordinate = coordinates[i];
                 var lng = coordinate[0];
                 var lat = coordinate[1];
-
+                pointArray.push(map.latLngToLayerPoint( L.latLng(lat, lng)));
             }
+            var
         }
     }
 
