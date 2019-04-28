@@ -17,6 +17,8 @@
 <script type="text/javascript" src="../../lib/leaflet/leaflet-src.js"></script>
 <script type="text/javascript" src="../../lib/leaflet/leaflet.ChineseTmsProviders.js"></script>
 
+<script type="text/javascript" src="../../js/polyutil.js"></script>
+
 
 <script>
     var map;
@@ -48,6 +50,7 @@
     });
 
     $.getJSON('../../static/rainColor/rainColor.json', {}, function (data) {
+        data = clipGeoJson(data);
         var colorMapLayer = L.geoJSON(data, {
             style: function (feature) {
                 if (feature.properties.color === '#f0f0f0') {
@@ -70,18 +73,145 @@
     });
 
     function clipGeoJson(data) {
+        var boundary = hbJson.features[0].geometry.coordinates[0];
         var features = data.features;
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
             var coordinates = feature.geometry.coordinates[0];
-            var pointArray = [];
+            features[i].geometry.coordinates[0] = clip2(coordinates, boundary);
+        }
+        data.features = features;
+        return data;
+    }
+
+    function clip2(coordinates, boundary) {
+        var newCoordinates = [];
+        for (var j = 0; j < coordinates.length; j++) {
+            var coordinate = coordinates[j];
+            var lng = Number(coordinate[0]);
+            var lat = Number(coordinate[1]);
+
+            if (PolyUtil.isPointInPolygon(lng, lat, boundary)) {
+                newCoordinates.push([lng, lat])
+            } /*else {
+
+                for (var i = 0; i < boundary.length - 1; i++) {
+                    var point1 = boundary[i];
+                    var _lng1 = Number(point1[0]);
+                    var _lat1 = Number(point1[1]);
+                    var point2 = boundary[i + 1];
+                    var _lng2 = Number(point2[0]);
+                    var _lat2 = Number(point2[1]);
+
+                    if ((lng - _lng1) * (lng - _lng2) < 0) {
+                        if ((lat - _lat1) * (lat - _lat2) < 0) {
+                            /!*点在边界内*!/
+                        } else {
+                            /!*点在边界外，判断点是在边界的上面还是边界的下面*!/
+                            if ((lat - _lat1) <= 0 && (lat - _lat2) <= 0) {
+                                /!*点在边界下面*!/
+                                lat = getMin(_lat1, _lat2);
+                                newCoordinates.push([lng + '', lat + '']);
+                                break;
+                            } else {
+                                /!*点在边界上面*!/
+                                lat = getMax(_lat1, _lat2);
+                                newCoordinates.push([lng + '', lat + '']);
+                                break;
+                            }
+                        }
+                    } else {
+                        if ((lat - _lat1) * (lat - _lat2) < 0) {
+                            /!*点在边界外，判断点是在边界的左边还是边界的右边*!/
+                            if ((lng - _lng1) <= 0 && (lng - _lng2) <= 0) {
+                                /!*点在边界左边*!/
+                                lng = getMin(_lng1, _lng2);
+                                newCoordinates.push([lng + '', lat + '']);
+                                break;
+                            } else {
+                                /!*点在边界右边*!/
+                                lng = getMax(_lng1, _lng2);
+                                newCoordinates.push([lng + '', lat + '']);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }*/
+        }
+        return newCoordinates;
+    }
+
+
+    function clip(coordinates, boundary) {
+
+        var newCoordinates = [];
+
+        outer:
             for (var j = 0; j < coordinates.length; j++) {
-                var coordinate = coordinates[i];
-                var lng = coordinate[0];
-                var lat = coordinate[1];
-                pointArray.push(map.latLngToLayerPoint( L.latLng(lat, lng)));
+                var coordinate = coordinates[j];
+                var lng = Number(coordinate[0]);
+                var lat = Number(coordinate[1]);
+
+                for (var i = 0; i < boundary.length - 1; i++) {
+                    var point1 = boundary[i];
+                    var _lng1 = Number(point1[0]);
+                    var _lat1 = Number(point1[1]);
+                    var point2 = boundary[i + 1];
+                    var _lng2 = Number(point2[0]);
+                    var _lat2 = Number(point2[1]);
+
+                    if ((lng - _lng1) * (lng - _lng2) < 0) {
+                        if ((lat - _lat1) * (lat - _lat2) < 0) {
+                            /*点在边界内*/
+                            continue;
+                        } else {
+                            /*点在边界外，判断点是在边界的上面还是边界的下面*/
+                            if ((lat - _lat1) <= 0 && (lat - _lat2) <= 0) {
+                                /*点在边界下面*/
+                                lat = getMin(_lat1, _lat2);
+                                break;
+                            } else {
+                                /*点在边界上面*/
+                                lat = getMax(_lat1, _lat2);
+                                break;
+                            }
+                        }
+                    } else {
+                        if ((lat - _lat1) * (lat - _lat2) < 0) {
+                            /*点在边界外，判断点是在边界的左边还是边界的右边*/
+                            if ((lng - _lng1) <= 0 && (lng - _lng2) <= 0) {
+                                /*点在边界左边*/
+                                lng = getMin(_lng1, _lng2);
+                                break;
+                            } else {
+                                /*点在边界右边*/
+                                lng = getMax(_lng1, _lng2);
+                                break;
+                            }
+                        } else {
+                            continue outer;
+                        }
+                    }
+                }
+                newCoordinates.push([lng + '', lat + ''])
             }
-            var
+        return newCoordinates;
+    }
+
+    function getMax(val1, val2) {
+        if (val1 <= val2) {
+            return val2;
+        } else {
+            return val1;
+        }
+    }
+
+    function getMin(val1, val2) {
+        if (val1 <= val2) {
+            return val1;
+        } else {
+            return val2;
         }
     }
 
